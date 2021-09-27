@@ -22,11 +22,16 @@ class DataAdapter(var myList : DataModel,var context: Context,var cli:ClickableI
 
         init {
             itemView.setOnClickListener {
-                cl.getPosition(adapterPosition)
+                cl.getPosition(adapterPosition,1)
             }
 
             direction.setOnClickListener {
-                cl.getDirection(adapterPosition)
+                cl.getPosition(adapterPosition,2)
+            }
+
+            imageView.setOnClickListener {
+
+                cl.getPosition(adapterPosition,3)
             }
         }
     }

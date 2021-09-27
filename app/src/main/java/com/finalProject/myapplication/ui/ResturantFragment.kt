@@ -67,21 +67,28 @@ class ResturantFragment : Fragment(),ClickableItem {
         recyclerView.adapter = dataAdapter
     }
 
-    override fun getPosition(pos: Int) {
-        var name = myData.data.get(pos).name
-        var image = myData.data.get(pos).image
-        var product = myData.data.get(pos).products
-        val action = ResturantFragmentDirections.actionResturantFragmentToProfileFragment(DataP(image,name,product))
-        Navigation.findNavController(myView).navigate(action)
-    }
+    override fun getPosition(pos: Int, l:Int) {
+        when(l){
+            1->{
+                var name = myData.data.get(pos).name
+                var image = myData.data.get(pos).image
+                var product = myData.data.get(pos).products
+                val action = ResturantFragmentDirections.actionResturantFragmentToProfileFragment(DataP(image,name,product))
+                Navigation.findNavController(myView).navigate(action)
+            }
+            2->{
+                var directionStart = myData.data.get(pos).restaurant_lat
+                var directionEnd = myData.data.get(pos).restaurant_long
+                val intent: Intent = Intent(Intent.ACTION_VIEW,
+                    Uri.parse("google.navigation:q=$directionStart,$directionEnd"))
+                intent.setPackage("com.google.android.apps.maps")
+                if (intent.resolveActivity(requireActivity().packageManager)!=null)
+                    requireActivity().startActivity(intent)
+            }
+            3->{
+                Navigation.findNavController(myView).navigate(R.id.directionFragment)
+            }
+        }
 
-    override fun getDirection(pos: Int) {
-        var directionStart = myData.data.get(pos).restaurant_lat
-        var directionEnd = myData.data.get(pos).restaurant_long
-        val intent: Intent = Intent(Intent.ACTION_VIEW,
-            Uri.parse("google.navigation:q=$directionStart,$directionEnd"))
-        intent.setPackage("com.google.android.apps.maps")
-        if (intent.resolveActivity(requireActivity().packageManager)!=null)
-            requireActivity().startActivity(intent)
     }
 }
