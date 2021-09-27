@@ -1,5 +1,7 @@
 package com.finalProject.myapplication.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -71,5 +73,15 @@ class ResturantFragment : Fragment(),ClickableItem {
         var product = myData.data.get(pos).products
         val action = ResturantFragmentDirections.actionResturantFragmentToProfileFragment(DataP(image,name,product))
         Navigation.findNavController(myView).navigate(action)
+    }
+
+    override fun getDirection(pos: Int) {
+        var directionStart = myData.data.get(pos).restaurant_lat
+        var directionEnd = myData.data.get(pos).restaurant_long
+        val intent: Intent = Intent(Intent.ACTION_VIEW,
+            Uri.parse("google.navigation:q=$directionStart,$directionEnd"))
+        intent.setPackage("com.google.android.apps.maps")
+        if (intent.resolveActivity(requireActivity().packageManager)!=null)
+            requireActivity().startActivity(intent)
     }
 }

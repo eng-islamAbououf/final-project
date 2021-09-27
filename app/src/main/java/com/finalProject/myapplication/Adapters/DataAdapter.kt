@@ -17,11 +17,16 @@ class DataAdapter(var myList : DataModel,var context: Context,var cli:ClickableI
 
     class MyViewHolder(itemView: View , var cl : ClickableItem) : RecyclerView.ViewHolder(itemView){
         var imageView : CircleImageView = itemView.findViewById(R.id.my_image)
+        var direction : ImageView = itemView.findViewById(R.id.direction)
         var name : TextView = itemView.findViewById(R.id.res_name)
 
         init {
             itemView.setOnClickListener {
                 cl.getPosition(adapterPosition)
+            }
+
+            direction.setOnClickListener {
+                cl.getDirection(adapterPosition)
             }
         }
     }
