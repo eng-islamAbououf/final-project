@@ -34,7 +34,6 @@ class ProfileFragment : Fragment() {
     lateinit var productAdapter:ProfileDataAdapter
     lateinit var layoutManager: GridLayoutManager
 
-    val myViewModel:MyViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

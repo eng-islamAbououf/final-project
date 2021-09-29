@@ -13,7 +13,6 @@ import retrofit2.Response
 class MyViewModel : ViewModel() {
 
     var productData: MutableLiveData<DataModel> = MutableLiveData()
-    var productDetail: MutableLiveData<Data> = MutableLiveData()
     var errors: MutableLiveData<String> = MutableLiveData()
 
     fun getProductFromDatabase() {
