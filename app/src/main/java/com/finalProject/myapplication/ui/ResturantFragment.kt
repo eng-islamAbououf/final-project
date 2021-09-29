@@ -1,15 +1,17 @@
 package com.finalProject.myapplication.ui
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.finalProject.myapplication.Adapters.DataAdapter
@@ -18,6 +20,7 @@ import com.finalProject.myapplication.Models.DataModel
 import com.finalProject.myapplication.Models.DataP
 import com.finalProject.myapplication.R
 import com.finalProject.myapplication.show
+import com.google.android.gms.location.LocationServices
 
 class ResturantFragment : Fragment(),ClickableItem {
 
@@ -26,6 +29,7 @@ class ResturantFragment : Fragment(),ClickableItem {
     lateinit var myData : DataModel
     lateinit var recyclerView: RecyclerView
     lateinit var myView : View
+    lateinit var progressBar: ProgressBar
 
     val myViewModel : MyViewModel by viewModels()
     override fun onCreateView(
@@ -44,6 +48,7 @@ class ResturantFragment : Fragment(),ClickableItem {
         myViewModel.getProductFromDatabase()
         myViewModel.productData.observe(viewLifecycleOwner, Observer {
 
+            progressBar.visibility = View.GONE
             myData=it
             install()
         })
@@ -53,13 +58,14 @@ class ResturantFragment : Fragment(),ClickableItem {
                 it,
                 0
             )
+            fetchLocation(30.55258,31.00904)
         })
     }
 
 
-
     private fun initView(view: View){
         recyclerView=view.findViewById(R.id.resturant_recycler)
+        progressBar= view.findViewById(R.id.progress)
     }
 
     private fun install(){
@@ -70,24 +76,59 @@ class ResturantFragment : Fragment(),ClickableItem {
     override fun getPosition(pos: Int, l:Int) {
         when(l){
             1->{
-                var name = myData.data.get(pos).name
-                var image = myData.data.get(pos).image
-                var product = myData.data.get(pos).products
-                val action = ResturantFragmentDirections.actionResturantFragmentToProfileFragment(DataP(image,name,product))
-                Navigation.findNavController(myView).navigate(action)
+                goToProfile(pos)
             }
             2->{
-                var directionStart = myData.data.get(pos).restaurant_lat
-                var directionEnd = myData.data.get(pos).restaurant_long
-                val intent: Intent = Intent(Intent.ACTION_VIEW,
-                    Uri.parse("google.navigation:q=$directionStart,$directionEnd"))
-                intent.setPackage("com.google.android.apps.maps")
-                if (intent.resolveActivity(requireActivity().packageManager)!=null)
-                    requireActivity().startActivity(intent)
+                goToGoogleMap(pos)
             }
-            3->{
-                Navigation.findNavController(myView).navigate(R.id.directionFragment)
+            3 -> {
+                fetchLocation(myData.data.get(pos).restaurant_lat.toDouble(),myData.data.get(pos).restaurant_long.toDouble())
             }
+        }
+
+    }
+
+    private fun goToProfile(pos: Int){
+        val action = ResturantFragmentDirections.actionResturantFragmentToProfileFragment(DataP(
+                myData.data.get(pos).image,
+                myData.data.get(pos).name,
+                myData.data.get(pos).products))
+        Navigation.findNavController(myView).navigate(action)
+    }
+
+    private fun goToGoogleMap(pos: Int){
+        val intent = Intent(Intent.ACTION_VIEW,
+                Uri.parse("google.navigation:q=${myData.data.get(pos).restaurant_lat},${myData.data.get(pos).restaurant_long}"))
+        intent.setPackage("com.google.android.apps.maps")
+
+        //check if user have google map app or not
+        if (intent.resolveActivity(requireActivity().packageManager)!=null)
+            requireActivity().startActivity(intent)
+    }
+
+    private fun goToMap(dLat:Double , dLng : Double,mLat:Double , mLng : Double){
+        val intent = Intent(requireContext(),MapActivity::class.java)
+        intent.putExtra("desLocationLat",dLat)
+        intent.putExtra("desLocationLng",dLng)
+        intent.putExtra("myLocationLat",mLat)
+        intent.putExtra("myLocationLng",mLng)
+        requireActivity().startActivity(intent)
+    }
+
+    private fun fetchLocation(dLat:Double , dLng : Double) {
+        val currentLocation = LocationServices.getFusedLocationProviderClient(requireActivity())
+        val task = currentLocation.lastLocation
+        if (ActivityCompat.checkSelfPermission(requireContext(),
+            android.Manifest.permission.ACCESS_FINE_LOCATION)
+        != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(requireActivity(),
+            arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),101)
+            return
+        }
+        task.addOnSuccessListener {
+            goToMap(dLat,dLng,it.latitude,it.longitude)
         }
 
     }
